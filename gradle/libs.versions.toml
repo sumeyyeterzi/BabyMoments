@@ -27,6 +27,8 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version = "2.6.1" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version = "2.6.1" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version = "2.6.1" }
+lottie-compose = "com.airbnb.android:lottie-compose:6.1.0"
+
 
 
 [plugins]
