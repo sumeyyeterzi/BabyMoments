@@ -15,8 +15,9 @@ import androidx.compose.ui.res.painterResource
 import com.airbnb.lottie.compose.*
 import com.sumeyyaterzi.babymoments.MainActivity
 import com.sumeyyaterzi.babymoments.R
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-
+@AndroidEntryPoint
 class SplashActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

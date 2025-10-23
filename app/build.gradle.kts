@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
     id("kotlin-kapt")
 }
 
@@ -61,11 +62,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.lottie.compose)
 
-
+    // --- 🗄️ ROOM ---
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
 
+    // --- 💉 HILT (Dependency Injection) ---
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 
     // --- 🧭 NAVIGATION (Compose ekran geçişleri için) ---
     implementation("androidx.navigation:navigation-compose:2.8.3")

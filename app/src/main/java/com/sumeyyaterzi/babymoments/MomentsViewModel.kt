@@ -1,24 +1,53 @@
 package com.sumeyyaterzi.babymoments
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sumeyyaterzi.babymoments.data.AppDatabase
 import com.sumeyyaterzi.babymoments.data.MomentEntity
 import com.sumeyyaterzi.babymoments.data.MomentRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MomentsViewModel(app: Application) : AndroidViewModel(app) {
-    private val repo = MomentRepository(AppDatabase.getInstance(app).momentDao())
-    val momentsFlow = repo.getAll().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+@HiltViewModel
+class MomentsViewModel @Inject constructor(
+    private val repo: MomentRepository
+) : ViewModel() {
+
+    val momentsFlow: StateFlow<List<MomentEntity>> = repo.getAll()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000), // Daha optimize
+            initialValue = emptyList()
+        )
+
+    // UI State için
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     fun addMoment(moment: MomentEntity) {
-        viewModelScope.launch { repo.insert(moment) }
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                repo.insert(moment)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun updateMoment(moment: MomentEntity) {
+        viewModelScope.launch {
+            repo.update(moment)
+        }
     }
 
     fun deleteMoment(moment: MomentEntity) {
-        viewModelScope.launch { repo.delete(moment) }
+        viewModelScope.launch {
+            repo.delete(moment)
+        }
     }
 }
