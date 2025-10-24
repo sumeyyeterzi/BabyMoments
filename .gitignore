@@ -37,15 +37,20 @@ captures/
 
 # IntelliJ
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-.idea/caches
-.idea/modules.xml
-.idea/navEditor.xml
+.idea/
+# Eğer sadece bazılarını ignore etmek istersen:
+# .idea/workspace.xml
+# .idea/tasks.xml
+# .idea/gradle.xml
+# .idea/assetWizardSettings.xml
+# .idea/dictionaries
+# .idea/libraries
+# .idea/caches
+# .idea/modules.xml
+# .idea/navEditor.xml
+# .idea/misc.xml
+# .idea/compiler.xml
+# .idea/vcs.xml
 
 # Android Profiling
 *.hprof
@@ -60,7 +65,7 @@ captures/
 .cxx/
 
 # Google Services (e.g. APIs or Firebase)
-google-services.json
+# google-services.json
 
 # Freeline
 freeline.py
@@ -87,10 +92,12 @@ lint-results*.xml
 # Mac
 .DS_Store
 
-# Android Profiling
-*.hprof
-
 # Misc
 *.swp
 *~
 .vscode/
+.fleet/
+*.bak
+
+# Kotlin
+.kotlin/
