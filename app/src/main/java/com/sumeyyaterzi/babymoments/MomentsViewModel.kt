@@ -20,7 +20,7 @@ class MomentsViewModel @Inject constructor(
     val momentsFlow: StateFlow<List<MomentEntity>> = repo.getAll()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000), // Daha optimize
+            started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
@@ -41,13 +41,27 @@ class MomentsViewModel @Inject constructor(
 
     fun updateMoment(moment: MomentEntity) {
         viewModelScope.launch {
-            repo.update(moment)
+            _isLoading.value = true
+            try {
+                repo.update(moment)
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
     fun deleteMoment(moment: MomentEntity) {
         viewModelScope.launch {
-            repo.delete(moment)
+            _isLoading.value = true
+            try {
+                repo.delete(moment)
+            } finally {
+                _isLoading.value = false
+            }
         }
+    }
+
+    fun getMomentById(id: Int): MomentEntity? {
+        return momentsFlow.value.find { it.id == id.toLong() }
     }
 }

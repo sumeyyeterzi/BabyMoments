@@ -5,15 +5,22 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MomentDao {
+
+    @Insert
+    suspend fun insert(moment: MomentEntity)
+
     @Query("SELECT * FROM moments ORDER BY date DESC")
     fun getAll(): Flow<List<MomentEntity>>
 
-    @Insert
-    suspend fun insert(moment: MomentEntity): Long
-
+    // YENİ: Update
     @Update
     suspend fun update(moment: MomentEntity)
 
+    // YENİ: Delete
     @Delete
     suspend fun delete(moment: MomentEntity)
+
+    // YENİ: ID'ye göre getir (opsiyonel, şu an gerekmiyor ama ileride lazım olabilir)
+    @Query("SELECT * FROM moments WHERE id = :momentId LIMIT 1")
+    suspend fun getById(momentId: Int): MomentEntity?
 }

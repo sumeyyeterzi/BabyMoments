@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -81,7 +83,17 @@ fun TimelineScreen(navController: NavController, viewModel: MomentsViewModel) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(moments) { item ->
-                        ModernTimelineItem(item, customPrimary, customLight)
+                        ModernTimelineItem(
+                            item = item,
+                            customPrimary = customPrimary,
+                            customLight = customLight,
+                            onEdit = { momentId ->
+                                navController.navigate("edit/$momentId")
+                            },
+                            onDelete = { moment ->
+                                viewModel.deleteMoment(moment)
+                            }
+                        )
                     }
                 }
             }
@@ -125,9 +137,12 @@ private fun EmptyState(customColor: Color) {
 private fun ModernTimelineItem(
     item: MomentEntity,
     customPrimary: Color,
-    customLight: Color
+    customLight: Color,
+    onEdit: (Long) -> Unit,
+    onDelete: (MomentEntity) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -267,8 +282,97 @@ private fun ModernTimelineItem(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ✅ EDIT & DELETE BUTONLARI BURADA!
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Edit Butonu
+                    OutlinedButton(
+                        onClick = {
+                            item.id?.let { onEdit(it) }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = customPrimary
+                        ),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = androidx.compose.ui.graphics.SolidColor(customPrimary)
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Düzenle",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Düzenle")
+                    }
+
+                    // Delete Butonu
+                    OutlinedButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFFE57373)
+                        ),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = androidx.compose.ui.graphics.SolidColor(Color(0xFFE57373))
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Sil",
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Sil")
+                    }
+                }
             }
         }
+    }
+
+    // Silme Onay Dialogu
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text(
+                    "Anıyı Sil",
+                    color = customPrimary
+                )
+            },
+            text = {
+                Text("Bu anıyı silmek istediğinizden emin misiniz?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDelete(item)
+                        showDeleteDialog = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color(0xFFE57373)
+                    )
+                ) {
+                    Text("Sil")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = customPrimary
+                    )
+                ) {
+                    Text("İptal")
+                }
+            }
+        )
     }
 }
 
