@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,23 +23,38 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.sumeyyaterzi.babymoments.BabyProfileViewModel
 import com.sumeyyaterzi.babymoments.MomentsViewModel
+import com.sumeyyaterzi.babymoments.data.Gender
 import com.sumeyyaterzi.babymoments.data.MomentEntity
+import com.sumeyyaterzi.babymoments.utils.GrowthCalculator
+import com.sumeyyaterzi.babymoments.utils.WHODataParser
 import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TimelineScreen(navController: NavController, viewModel: MomentsViewModel) {
+fun TimelineScreen(
+    navController: NavController,
+    viewModel: MomentsViewModel,
+    profileViewModel: BabyProfileViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
     val moments = viewModel.momentsFlow.collectAsState().value
+    val profile = profileViewModel.profile.collectAsState().value
 
     // Özel renkler
     val customPrimary = Color(0xFFF1A3A7)
     val customLight = Color(0xFFFDDDDD)
+
+    // WHO verilerini yükle
+    val whoData = remember { WHODataParser.loadWHOData(context) }
 
     Scaffold(
         topBar = {
@@ -85,6 +101,8 @@ fun TimelineScreen(navController: NavController, viewModel: MomentsViewModel) {
                     items(moments) { item ->
                         ModernTimelineItem(
                             item = item,
+                            profile = profile,
+                            whoData = whoData,
                             customPrimary = customPrimary,
                             customLight = customLight,
                             onEdit = { momentId ->
@@ -136,6 +154,8 @@ private fun EmptyState(customColor: Color) {
 @Composable
 private fun ModernTimelineItem(
     item: MomentEntity,
+    profile: com.sumeyyaterzi.babymoments.data.BabyProfileEntity?,
+    whoData: com.sumeyyaterzi.babymoments.data.WHOData,
     customPrimary: Color,
     customLight: Color,
     onEdit: (Long) -> Unit,
@@ -143,6 +163,22 @@ private fun ModernTimelineItem(
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // WHO Değerlendirmesi (kilo ve boy varsa)
+    val whoAssessment = remember(item, profile) {
+        if (profile != null && item.weight != null && item.height != null) {
+            val ageInMonths = GrowthCalculator.calculateAgeInMonths(profile.birthDate)
+            val gender = if (profile.gender == "MALE") Gender.MALE else Gender.FEMALE
+
+            GrowthCalculator.assessGrowth(
+                ageInMonths = ageInMonths,
+                gender = gender,
+                weightKg = item.weight,
+                heightCm = item.height,
+                whoData = whoData
+            )
+        } else null
+    }
 
     Card(
         modifier = Modifier
@@ -248,6 +284,16 @@ private fun ModernTimelineItem(
                 HorizontalDivider(color = customLight)
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // WHO Değerlendirmesi
+                if (whoAssessment != null) {
+                    WHOAssessmentCompact(
+                        assessment = whoAssessment,
+                        customPrimary = customPrimary,
+                        customLight = customLight
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 // Not
                 if (!item.note.isNullOrEmpty()) {
                     Text(
@@ -285,12 +331,11 @@ private fun ModernTimelineItem(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ✅ EDIT & DELETE BUTONLARI BURADA!
+                // Edit & Delete Butonları
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Edit Butonu
                     OutlinedButton(
                         onClick = {
                             item.id?.let { onEdit(it) }
@@ -312,7 +357,6 @@ private fun ModernTimelineItem(
                         Text("Düzenle")
                     }
 
-                    // Delete Butonu
                     OutlinedButton(
                         onClick = { showDeleteDialog = true },
                         modifier = Modifier.weight(1f),
@@ -373,6 +417,48 @@ private fun ModernTimelineItem(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun WHOAssessmentCompact(
+    assessment: com.sumeyyaterzi.babymoments.data.GrowthAssessment,
+    customPrimary: Color,
+    customLight: Color
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = customPrimary.copy(alpha = 0.1f)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = customPrimary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "WHO Değerlendirmesi",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = customPrimary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    assessment.advice,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = customPrimary.copy(alpha = 0.8f)
+                )
+            }
+        }
     }
 }
 

@@ -34,7 +34,7 @@ import java.io.File
 fun EditMomentScreen(
     navController: NavController,
     viewModel: MomentsViewModel,
-    momentId: Int
+    momentId: Long
 ) {
     val context = LocalContext.current
     val moment = viewModel.getMomentById(momentId)

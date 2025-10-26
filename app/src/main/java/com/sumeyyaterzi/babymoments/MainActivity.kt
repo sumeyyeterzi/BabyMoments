@@ -11,8 +11,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.sumeyyaterzi.babymoments.screens.AddMomentScreen
+import com.sumeyyaterzi.babymoments.screens.EditBabyProfileScreen
 import com.sumeyyaterzi.babymoments.screens.EditMomentScreen
-import com.sumeyyaterzi.babymoments.screens.TimelineScreen
+import com.sumeyyaterzi.babymoments.screens.MainScreen
 import com.sumeyyaterzi.babymoments.ui.theme.BabyMomentsTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -37,17 +38,17 @@ fun AppNavigation(viewModel: MomentsViewModel) {
 
     NavHost(
         navController = navController,
-        startDestination = "timeline"
+        startDestination = "main"
     ) {
-        // Timeline (Ana Ekran)
-        composable("timeline") {
-            TimelineScreen(
-                navController = navController,
-                viewModel = viewModel
+        // Ana Ekran (Bottom Navigation ile)
+        composable("main") {
+            MainScreen(
+                viewModel = viewModel,
+                parentNavController = navController  // ← Parent NavController'ı geç
             )
         }
 
-        // Yeni Anı Ekle
+        // Yeni Anı Ekle (Full screen - Bottom Nav yok)
         composable("add") {
             AddMomentScreen(
                 navController = navController,
@@ -55,16 +56,18 @@ fun AppNavigation(viewModel: MomentsViewModel) {
             )
         }
 
-        // Anı Düzenle (ID parametreli)
+        // Anı Düzenle (Full screen - Bottom Nav yok)
         composable(
             route = "edit/{momentId}",
             arguments = listOf(
                 navArgument("momentId") {
-                    type = NavType.IntType
+                    type = NavType.LongType
                 }
             )
-        ) { backStackEntry ->
-            val momentId = backStackEntry.arguments?.getInt("momentId")
+        )
+
+        { backStackEntry ->
+            val momentId = backStackEntry.arguments?.getLong("momentId")
             if (momentId != null) {
                 EditMomentScreen(
                     navController = navController,
@@ -72,6 +75,9 @@ fun AppNavigation(viewModel: MomentsViewModel) {
                     momentId = momentId
                 )
             }
+        }
+        composable("edit_profile") {
+            EditBabyProfileScreen(navController = navController)
         }
     }
 }

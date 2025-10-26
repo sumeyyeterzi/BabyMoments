@@ -61,7 +61,7 @@ class MomentsViewModel @Inject constructor(
         }
     }
 
-    fun getMomentById(id: Int): MomentEntity? {
+    fun getMomentById(id: Long): MomentEntity? {
         return momentsFlow.value.find { it.id == id.toLong() }
     }
 }
