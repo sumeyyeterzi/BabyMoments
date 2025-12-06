@@ -40,6 +40,9 @@ class SplashActivity : ComponentActivity() {
         }
     }
 
+
+    //deneme deneme deemm
+
     @Composable
     fun ModernSplashScreen(onSplashFinished: () -> Unit) {
         // Animasyonlar
