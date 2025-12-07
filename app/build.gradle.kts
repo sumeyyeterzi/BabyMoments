@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     id("kotlin-kapt")
+    kotlin("plugin.serialization") version "1.9.20"
 }
 
 android {
@@ -62,6 +63,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.lottie.compose)
 
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     // --- 🗄️ ROOM ---
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
